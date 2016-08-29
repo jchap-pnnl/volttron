@@ -213,32 +213,38 @@ var devicesActionCreators = {
     },
     scanForDevices: function scanForDevices(platformUuid, bacnetProxyUuid, low, high, address) {
 
-        var authorization = authorizationStore.getAuthorization();
+        // var authorization = authorizationStore.getAuthorization();
 
-        return new rpc.Exchange({
-            method: 'platform.uuid.' + platformUuid + '.agent.uuid.' + bacnetProxyUuid + '.who_is',
-            authorization: authorization,
-            params: {}
-        }).promise.then(function (result) {
+        // return new rpc.Exchange({
+        //     method: 'platform.uuid.' + platformUuid + '.agent.uuid.' + bacnetProxyUuid + '.who_is',
+        //     authorization: authorization,
+        //     params: {
 
-            if (result) {
-                console.log(JSON.stringify(result));
+        //     },
+        // }).promise
+        //     .then(function (result) {
 
-                dispatcher.dispatch({
-                    type: ACTION_TYPES.LISTEN_FOR_IAMS,
-                    platformUuid: platformUuid,
-                    bacnetProxyUuid: bacnetProxyUuid,
-                    low_device_id: low,
-                    high_device_id: high,
-                    target_address: address
-                });
-            }
-        }).catch(rpc.Error, function (error) {
+        //         if (result)
+        //         {
+        //             console.log(JSON.stringify(result));
 
-            error.message = "Unable to scan for devices. " + error.message + ".";
-
-            handle401(error, error.message);
+        dispatcher.dispatch({
+            type: ACTION_TYPES.LISTEN_FOR_IAMS,
+            platformUuid: platformUuid,
+            bacnetProxyUuid: bacnetProxyUuid,
+            low_device_id: low,
+            high_device_id: high,
+            target_address: address
         });
+        //     }
+
+        // })
+        // .catch(rpc.Error, function (error) {
+
+        //     error.message = "Unable to scan for devices. " + error.message + ".";
+
+        //     handle401(error, error.message);
+        // });
     },
     cancelScan: function cancelScan(platform) {
         dispatcher.dispatch({
@@ -4900,7 +4906,7 @@ var DeviceConfiguration = function (_BaseComponent) {
 
         var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(DeviceConfiguration).call(this, props));
 
-        _this._bind();
+        _this._bind('_updateCell', '_focusCellAndColumn', '_blurCellAndColumn');
 
         _this.state = {};
 
@@ -4927,6 +4933,9 @@ var DeviceConfiguration = function (_BaseComponent) {
         _this.state.selectedCells = [];
         _this.state.selectedCellRow = null;
         _this.state.selectedCellColumn = null;
+
+        _this.state.activeColumn = null;
+        _this.state.activeRow = null;
 
         _this.scrollToBottom = false;
         _this.resizeTable = false;
@@ -5244,9 +5253,21 @@ var DeviceConfiguration = function (_BaseComponent) {
             var currentTarget = e.currentTarget;
             var newRegistryValues = this.state.registryValues.slice();
 
-            newRegistryValues[row][column].value = currentTarget.value;
+            newRegistryValues[row][column].value = currentTarget.textContent;
 
             this.setState({ registryValues: newRegistryValues });
+        }
+    }, {
+        key: '_focusCellAndColumn',
+        value: function _focusCellAndColumn(row, column, e) {
+            this.setState({ activeRow: row });
+            this.setState({ activeColumn: column });
+        }
+    }, {
+        key: '_blurCellAndColumn',
+        value: function _blurCellAndColumn() {
+            this.setState({ activeRow: null });
+            this.setState({ activeColumn: null });
         }
     }, {
         key: '_onFindNext',
@@ -5454,38 +5475,46 @@ var DeviceConfiguration = function (_BaseComponent) {
 
                 var registryCells = attributesList.map(function (item, columnIndex) {
 
-                    var selectedStyle = item.selected ? { backgroundColor: "#F5B49D" } : {};
-                    var focusedCell = this.state.selectedCellColumn === columnIndex && this.state.selectedCellRow === rowIndex ? "focusedCell" : "";
+                    var selectedStyle = item.selected ? { backgroundColor: "#F5B49D" } : columnIndex === this.state.activeColumn ? rowIndex === this.state.activeRow ? { backgroundColor: "#B0B0B0" } : { backgroundColor: "#DBDBDB" } : {};
+
+                    var focusedCell = this.state.selectedCellColumn === columnIndex && this.state.selectedCellRow === rowIndex ? " registryConfig-input focusedCell inlineBlock" : "registryConfig-input inlineBlock";
 
                     var itemCell = columnIndex === 0 && !item.editable ? _react2.default.createElement(
-                        'td',
-                        null,
+                        'div',
+                        { key: this.state.registryValues[rowIndex][columnIndex].key + "-" + columnIndex + "-" + rowIndex + "-key", className: 'registryConfig-cell' },
                         _react2.default.createElement(
                             'label',
                             null,
                             item.value
                         )
                     ) : _react2.default.createElement(
-                        'td',
-                        null,
-                        _react2.default.createElement('input', {
-                            id: this.state.registryValues[rowIndex][columnIndex].key + "-" + columnIndex + "-" + rowIndex,
+                        'div',
+                        { key: this.state.registryValues[rowIndex][columnIndex].key + "-" + columnIndex + "-" + rowIndex + "-key", className: 'registryConfig-cell' },
+                        _react2.default.createElement(
+                            'div',
+                            { className: 'inlineBlock' },
+                            ' ◆ '
+                        ),
+                        _react2.default.createElement('div', { id: this.state.registryValues[rowIndex][columnIndex].key + "-" + columnIndex + "-" + rowIndex,
                             type: 'text',
                             className: focusedCell,
                             style: selectedStyle,
-                            onChange: this._updateCell.bind(this, rowIndex, columnIndex),
-                            value: this.state.registryValues[rowIndex][columnIndex].value })
+                            contentEditable: true,
+                            onInput: this._updateCell.bind(this, rowIndex, columnIndex),
+                            onBlur: this._blurCellAndColumn,
+                            onFocus: this._focusCellAndColumn.bind(this, rowIndex, columnIndex),
+                            dangerouslySetInnerHTML: { __html: this.state.registryValues[rowIndex][columnIndex].value } })
                     );
 
                     return itemCell;
                 }, this);
 
                 return _react2.default.createElement(
-                    'tr',
-                    null,
+                    'div',
+                    { className: 'registryConfig-row' },
                     _react2.default.createElement(
-                        'td',
-                        null,
+                        'div',
+                        { className: 'registryConfig-cell' },
                         _react2.default.createElement('input', { type: 'checkbox',
                             onChange: this._selectForDelete.bind(this, attributesList),
                             checked: this.state.pointsToDelete.indexOf(attributesList[0].value) > -1 })
@@ -5525,8 +5554,8 @@ var DeviceConfiguration = function (_BaseComponent) {
                 }
 
                 var headerCell = index === 0 ? _react2.default.createElement(
-                    'th',
-                    { style: firstColumnWidth },
+                    'div',
+                    { className: 'registryConfig-header-cell', style: firstColumnWidth },
                     _react2.default.createElement(
                         'div',
                         { className: 'th-inner' },
@@ -5539,12 +5568,16 @@ var DeviceConfiguration = function (_BaseComponent) {
                         removePointsButton
                     )
                 ) : _react2.default.createElement(
-                    'th',
-                    null,
+                    'div',
+                    { className: 'registryConfig-header-cell' },
                     _react2.default.createElement(
                         'div',
                         { className: 'th-inner', style: wideCell },
-                        item,
+                        _react2.default.createElement(
+                            'span',
+                            { style: index === this.state.activeColumn ? { backgroundColor: "#DBDBDB" } : {} },
+                            item
+                        ),
                         cogButton,
                         editColumnButton
                     )
@@ -5570,31 +5603,23 @@ var DeviceConfiguration = function (_BaseComponent) {
                         'div',
                         { className: 'fixed-table-container-inner' },
                         _react2.default.createElement(
-                            'table',
-                            { className: 'registryConfigTable' },
+                            'div',
+                            { className: 'registryConfig-table' },
                             _react2.default.createElement(
-                                'thead',
-                                null,
+                                'div',
+                                { className: 'registryConfig-header' },
                                 _react2.default.createElement(
-                                    'tr',
-                                    null,
-                                    _react2.default.createElement(
-                                        'th',
-                                        null,
-                                        _react2.default.createElement(
-                                            'div',
-                                            { className: 'th-inner' },
-                                            _react2.default.createElement('input', { type: 'checkbox',
-                                                onChange: this._selectAll,
-                                                checked: this.state.allSelected })
-                                        )
-                                    ),
-                                    registryHeader
-                                )
+                                    'div',
+                                    { className: 'registryConfig-header-cell th-inner' },
+                                    _react2.default.createElement('input', { type: 'checkbox',
+                                        onChange: this._selectAll,
+                                        checked: this.state.allSelected })
+                                ),
+                                registryHeader
                             ),
                             _react2.default.createElement(
-                                'tbody',
-                                null,
+                                'div',
+                                { className: 'registryConfig-body' },
                                 registryRows
                             )
                         )

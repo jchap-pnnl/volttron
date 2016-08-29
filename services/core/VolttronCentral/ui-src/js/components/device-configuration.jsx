@@ -16,7 +16,7 @@ var modalActionCreators = require('../action-creators/modal-action-creators');
 class DeviceConfiguration extends BaseComponent {    
     constructor(props) {
         super(props);
-        this._bind();
+        this._bind('_updateCell', '_focusCellAndColumn', '_blurCellAndColumn');
 
         this.state = {};
 
@@ -44,6 +44,9 @@ class DeviceConfiguration extends BaseComponent {
         this.state.selectedCells = [];
         this.state.selectedCellRow = null;
         this.state.selectedCellColumn = null;
+
+        this.state.activeColumn = null;
+        this.state.activeRow = null;
 
         this.scrollToBottom = false;
         this.resizeTable = false;
@@ -355,9 +358,17 @@ class DeviceConfiguration extends BaseComponent {
         var currentTarget = e.currentTarget;
         var newRegistryValues = this.state.registryValues.slice();
 
-        newRegistryValues[row][column].value = currentTarget.value;
+        newRegistryValues[row][column].value = currentTarget.textContent;
 
         this.setState({ registryValues: newRegistryValues });
+    }
+    _focusCellAndColumn(row, column, e) {
+        this.setState({ activeRow: row });
+        this.setState({ activeColumn: column });
+    }
+    _blurCellAndColumn() {
+        this.setState({ activeRow: null });
+        this.setState({ activeColumn: null });
     }
     _onFindNext(findValue, column) {
 
@@ -577,33 +588,43 @@ class DeviceConfiguration extends BaseComponent {
 
             var registryCells = attributesList.map(function (item, columnIndex) {
 
-                var selectedStyle = (item.selected ? {backgroundColor: "#F5B49D"} : {});
-                var focusedCell = (this.state.selectedCellColumn === columnIndex && this.state.selectedCellRow === rowIndex ? "focusedCell" : "");
+                var selectedStyle = (item.selected ? { backgroundColor: "#F5B49D" } : 
+                                        (columnIndex === this.state.activeColumn ? 
+                                            (rowIndex === this.state.activeRow ? 
+                                                { backgroundColor: "#B0B0B0" } : 
+                                                    { backgroundColor: "#DBDBDB" }) :
+                                                         {} ) );
+
+                var focusedCell = (this.state.selectedCellColumn === columnIndex && this.state.selectedCellRow === rowIndex ? " registryConfig-input focusedCell inlineBlock" : "registryConfig-input inlineBlock");
 
                 var itemCell = (columnIndex === 0 && !item.editable ? 
-                                    <td><label>{ item.value }</label></td> : 
-                                        <td><input 
-                                                id={this.state.registryValues[rowIndex][columnIndex].key + "-" + columnIndex + "-" + rowIndex}
+                                    <div key={this.state.registryValues[rowIndex][columnIndex].key + "-" + columnIndex + "-" + rowIndex + "-key"} className="registryConfig-cell"><label>{ item.value }</label></div> : 
+                                        <div key={this.state.registryValues[rowIndex][columnIndex].key + "-" + columnIndex + "-" + rowIndex + "-key"} className="registryConfig-cell">
+                                            <div className="inlineBlock">&nbsp;&#9670;&nbsp;</div>
+                                            <div id={this.state.registryValues[rowIndex][columnIndex].key + "-" + columnIndex + "-" + rowIndex}
                                                 type="text"
                                                 className={focusedCell}
                                                 style={selectedStyle}
-                                                onChange={this._updateCell.bind(this, rowIndex, columnIndex)} 
-                                                value={ this.state.registryValues[rowIndex][columnIndex].value }/>
-                                        </td>);
+                                                contentEditable
+                                                onInput={this._updateCell.bind(this, rowIndex, columnIndex)} 
+                                                onBlur={this._blurCellAndColumn} 
+                                                onFocus={this._focusCellAndColumn.bind(this, rowIndex, columnIndex)}
+                                                dangerouslySetInnerHTML={{__html: this.state.registryValues[rowIndex][columnIndex].value }}/>
+                                        </div>);
 
                 return itemCell;
             }, this);
 
             return ( 
-                <tr>
-                    <td>
+                <div className="registryConfig-row">
+                    <div className="registryConfig-cell">
                         <input type="checkbox"
                             onChange={this._selectForDelete.bind(this, attributesList)}
                             checked={this.state.pointsToDelete.indexOf(attributesList[0].value) > -1}>
                         </input>
-                    </td>
+                    </div>
                     { registryCells }
-                </tr>
+                </div>
             )
         }, this);
 
@@ -639,18 +660,20 @@ class DeviceConfiguration extends BaseComponent {
             }
 
             var headerCell = (index === 0 ?
-                                ( <th style={firstColumnWidth}>
+                                ( <div className="registryConfig-header-cell" style={firstColumnWidth}>
                                     <div className="th-inner">
                                         { item } { filterButton } { addPointButton } { removePointsButton }
                                     </div>
-                                </th>) :
-                                ( <th>
+                                </div>) :
+                                ( <div className="registryConfig-header-cell">
                                     <div className="th-inner" style={wideCell}>
-                                        { item }
+                                        <span style={ (index === this.state.activeColumn ?                                             
+                                                        { backgroundColor: "#DBDBDB" } :
+                                                         {} ) }>{ item }</span>
                                         { cogButton }
                                         { editColumnButton }
                                     </div>
-                                </th> ) );
+                                </div> ) );
 
             return headerCell;
         }, this);        
@@ -666,23 +689,19 @@ class DeviceConfiguration extends BaseComponent {
                 <div className="fixed-table-container"> 
                     <div className="header-background"></div>      
                     <div className="fixed-table-container-inner">    
-                        <table className="registryConfigTable">
-                            <thead>
-                                <tr>
-                                    <th>
-                                        <div className="th-inner">
-                                            <input type="checkbox"
-                                                onChange={this._selectAll}
-                                                checked={this.state.allSelected}/>
-                                        </div>
-                                    </th>
-                                    { registryHeader }
-                                </tr>
-                            </thead>
-                            <tbody>                            
+                        <div className="registryConfig-table">
+                            <div className="registryConfig-header">
+                                <div className="registryConfig-header-cell th-inner">
+                                    <input type="checkbox"
+                                        onChange={this._selectAll}
+                                        checked={this.state.allSelected}/>
+                                </div>
+                                { registryHeader }
+                            </div>
+                            <div className="registryConfig-body">                            
                                 { registryRows }
-                            </tbody>
-                        </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div style={wideDiv}>
