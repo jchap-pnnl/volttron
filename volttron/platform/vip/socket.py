@@ -72,14 +72,12 @@ from __future__ import absolute_import
 import base64
 import binascii
 from contextlib import contextmanager
-import logging
-import sys
 import urllib
 import urlparse
 import uuid
 
 from zmq import (SNDMORE, RCVMORE, NOBLOCK, POLLOUT, DEALER, ROUTER,
-                 curve_keypair, ZMQError)
+                 curve_keypair)
 from zmq.error import Again
 from zmq.utils import z85
 
@@ -88,7 +86,6 @@ __all__ = ['Address', 'ProtocolError', 'Message', 'nonblocking']
 
 BASE64_ENCODED_CURVE_KEY_LEN = 43
 
-_log = logging.getLogger(__name__)
 
 @contextmanager
 def nonblocking(sock):
@@ -229,15 +226,8 @@ class Address(object):
             elif self.username:
                 sock.plain_username = self.username
                 sock.plain_password = self.password or b''
-        try:
-            (bind_fn or sock.bind)(self.base)
-            self.base = sock.last_endpoint
-        except ZMQError:
-            message = 'Attempted to bind Volttron to already bound address {}, stopping'
-            message = message.format(self.base)
-            _log.error(message)
-            print("\n" + message + "\n")
-            sys.exit(1)
+        (bind_fn or sock.bind)(self.base)
+        self.base = sock.last_endpoint
 
     def connect(self, sock, connect_fn=None):
         '''Extended zmq.Socket.connect() to include options in the address.'''

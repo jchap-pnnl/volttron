@@ -10,8 +10,6 @@ Type=simple
 User=volttron
 Group=volttron
 WorkingDirectory=/var/lib/volttron
-#Uncomment and change this to specify a different VOLTTRON_HOME
-#Environment="VOLTTRON_HOME=/home/volttron/.volttron"
 ExecStart=/var/lib/volttron/env/bin/volttron -vv
 
 [Install]

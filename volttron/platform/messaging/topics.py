@@ -98,17 +98,13 @@ __author__ = 'Brandon Carpenter <brandon.carpenter@pnnl.gov>'
 __copyright__ = 'Copyright (c) 2016, Battelle Memorial Institute'
 __license__ = 'FreeBSD'
 
-ALERTS_BASE = _('alerts')
 ALERTS = _('alerts/{agent_class}/{agent_uuid}') #/{agent_class}/{publickey}/{alert_key}')
 
 HEARTBEAT = _('heartbeats')
-PLATFORM_BASE = _('platform')
-PLATFORM_SEND_EMAIL = _('platform/send_email')
 PLATFORM = _('platform/{subtopic}')
 PLATFORM_SHUTDOWN = PLATFORM(subtopic='shutdown')
 PLATFORM_VCP_DEVICES = _('platforms/{platform_uuid}/devices/{topic}')
 
-RECORD_BASE = _('record')
 RECORD = _('record/{subtopic}')
 
 AGENT_SHUTDOWN = _('agent/{agent}/shutdown')
@@ -151,8 +147,7 @@ ACTUATOR_SCHEDULE_ANNOUNCE = _(ACTUATOR_SCHEDULE_ANNOUNCE_RAW.replace('{device}'
 
 # Added by CHA to be used as the root of all actuators for working within
 # base_historian.py.
-ACTUATOR_BASE = _('actuators')
-ACTUATOR = _(_DEVICES_VALUE.replace('{node}', ACTUATOR_BASE))
+ACTUATOR = _(_DEVICES_VALUE.replace('{node}', 'actuators'))
 ACTUATOR_ERROR = _(_DEVICES_VALUE.replace('{node}', 'actuators/error'))
 ACTUATOR_VALUE = _(_DEVICES_VALUE.replace('{node}', 'actuators/value'))
 

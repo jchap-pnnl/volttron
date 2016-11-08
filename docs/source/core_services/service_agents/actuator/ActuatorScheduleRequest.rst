@@ -45,12 +45,6 @@ with the following message:
         #etc...
     ]
 
-.. warning::
-
-   If time zones are not included in schedule requests then the Actuator will
-   interpret them as being in local time. This may cause remote interaction
-   with the actuator to malfunction.
-
 Points on Task Scheduling
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 

@@ -1,5 +1,3 @@
-.. _CAgent:
-
 CAgent
 ======
 

@@ -1,5 +1,3 @@
-.. _AggregateHistorian:
-
 =======================================
 Aggregate Historian Agent Specification
 =======================================

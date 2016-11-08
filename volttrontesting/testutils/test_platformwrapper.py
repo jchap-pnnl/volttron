@@ -78,7 +78,7 @@ def test_can_install_listener(volttron_instance):
     print('STARTED: ', started)
     listening = vi.build_agent()
     listening.vip.pubsub.subscribe(peer='pubsub',
-                                   prefix='heartbeat/listeneragent',
+                                   prefix='heartbeat/ListenerAgent',
                                    callback=onmessage)
     # sleep for 10 seconds and at least one heartbeat should have been
     # published
@@ -87,10 +87,10 @@ def test_can_install_listener(volttron_instance):
 
     print('Awaiting heartbeat response.')
     while not messages_contains_prefix(
-            'heartbeat/listeneragent') and time.time() < time_start + 10:
+            'heartbeat/ListenerAgent') and time.time() < time_start + 10:
         gevent.sleep(0.2)
 
-    assert messages_contains_prefix('heartbeat/listeneragent')
+    assert messages_contains_prefix('heartbeat/ListenerAgent')
 
     stopped = vi.stop_agent(auuid)
     print('STOPPED: ', stopped)
@@ -132,9 +132,7 @@ def test_can_stop_vip_heartbeat(volttron_instance):
     assert vi is not None
     assert vi.is_running()
 
-    agent = vi.build_agent(heartbeat_autostart=True,
-                           heartbeat_period=1,
-                           identity='Agent')
+    agent = vi.build_agent(heartbeat_autostart=True, heartbeat_period=5)
     agent.vip.pubsub.subscribe(peer='pubsub', prefix='heartbeat/Agent',
                                callback=onmessage)
 
@@ -256,7 +254,7 @@ def test_can_install_listener_on_two_platforms(get_volttron_instances):
     print('STARTED: ', started)
     listening = wrapper1.build_agent()
     listening.vip.pubsub.subscribe(peer='pubsub',
-                                   prefix='heartbeat/listeneragent',
+                                   prefix='heartbeat/ListenerAgent',
                                    callback=onmessage)
 
     # sleep for 10 seconds and at least one heartbeat should have been
@@ -273,7 +271,7 @@ def test_can_install_listener_on_two_platforms(get_volttron_instances):
     print('STARTED: ', started2)
     listening = wrapper2.build_agent()
     listening.vip.pubsub.subscribe(peer='pubsub',
-                                   prefix='heartbeat/listeneragent',
+                                   prefix='heartbeat/ListenerAgent',
                                    callback=onmessage)
 
     # sleep for 10 seconds and at least one heartbeat should have been
@@ -283,7 +281,7 @@ def test_can_install_listener_on_two_platforms(get_volttron_instances):
 
     print('Awaiting heartbeat response.')
     while not messages_contains_prefix(
-            'heartbeat/listeneragent') and time.time() < time_start + 10:
+            'heartbeat/ListenerAgent') and time.time() < time_start + 10:
         gevent.sleep(0.2)
 
-    assert messages_contains_prefix('heartbeat/listeneragent')
+    assert messages_contains_prefix('heartbeat/ListenerAgent')
