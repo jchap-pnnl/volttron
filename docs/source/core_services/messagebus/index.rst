@@ -1,4 +1,3 @@
-.. _messagebus index:
 ====================
 VOLTTRON Message Bus
 ====================

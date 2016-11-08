@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if [ ! -e "./volttron/platform" ]; then
+if [ ! -e "./applications" ]; then
     echo "Please execute from root of volttron repository."
     exit 0
 fi

@@ -69,7 +69,6 @@ import threading
 import time
 import urlparse
 import uuid
-import weakref
 
 import gevent.event
 from zmq import green as zmq
@@ -179,7 +178,6 @@ class BasicCore(object):
 
     def __init__(self, owner):
         self.greenlet = None
-        self.spawned_greenlets = weakref.WeakSet()
         self._async = None
         self._async_calls = []
         self._stop_event = None
@@ -216,7 +214,7 @@ class BasicCore(object):
 
         def start_periodics(sender, **kwargs):   # pylint: disable=unused-argument
             for periodic in periodics:
-                sender.spawned_greenlets.add(periodic)
+                sender.greenlet.link(lambda glt: periodic.kill())
                 periodic.start()
             del periodics[:]
         self.onstart.connect(start_periodics)
@@ -233,7 +231,7 @@ class BasicCore(object):
 
     def link_receiver(self, receiver, sender, **kwargs):
         greenlet = gevent.spawn(receiver, sender, **kwargs)
-        self.spawned_greenlets.add(greenlet)
+        self.greenlet.link(lambda glt: greenlet.kill())
         return greenlet
 
     def run(self, running_event=None):   # pylint: disable=method-hidden
@@ -241,10 +239,6 @@ class BasicCore(object):
 
         self.setup()
         self.greenlet = current = gevent.getcurrent()
-        def kill_leftover_greenlets():
-            for glt in self.spawned_greenlets:
-                glt.kill()
-        self.greenlet.link(lambda _: kill_leftover_greenlets())
 
         def handle_async():
             '''Execute pending calls.'''
@@ -252,7 +246,7 @@ class BasicCore(object):
             while calls:
                 func, args, kwargs = calls.pop()
                 greenlet = gevent.spawn(func, *args, **kwargs)
-                self.spawned_greenlets.add(greenlet)
+                current.link(lambda glt: greenlet.kill())
 
         def schedule_loop():
             heap = self._schedule
@@ -285,7 +279,7 @@ class BasicCore(object):
 
         loop = looper.next()
         if loop:
-            self.spawned_greenlets.add(loop)
+            current.link(lambda glt: loop.kill())
         scheduler = gevent.spawn(schedule_loop)
         if loop:
             loop.link(lambda glt: scheduler.kill())
@@ -346,13 +340,13 @@ class BasicCore(object):
     def spawn(self, func, *args, **kwargs):
         assert self.greenlet is not None
         greenlet = gevent.spawn(func, *args, **kwargs)
-        self.spawned_greenlets.add(greenlet)
+        self.greenlet.link(lambda glt: greenlet.kill())
         return greenlet
 
     def spawn_later(self, seconds, func, *args, **kwargs):
         assert self.greenlet is not None
         greenlet = gevent.spawn_later(seconds, func, *args, **kwargs)
-        self.spawned_greenlets.add(greenlet)
+        self.greenlet.link(lambda glt: greenlet.kill())
         return greenlet
 
     def spawn_in_thread(self, func, *args, **kwargs):
@@ -371,7 +365,7 @@ class BasicCore(object):
     @dualmethod
     def periodic(self, period, func, args=None, kwargs=None, wait=0):
         greenlet = Periodic(period, args, kwargs, wait).get(func)
-        self.spawned_greenlets.add(greenlet)
+        self.greenlet.link(lambda glt: greenlet.kill())
         greenlet.start()
         return greenlet
 
@@ -419,7 +413,7 @@ class Core(BasicCore):
     def __init__(self, owner, address=None, identity=None, context=None,
                  publickey=None, secretkey=None, serverkey=None,
                  volttron_home=os.path.abspath(platform.get_home()),
-                 agent_uuid=None, developer_mode=False, reconnect_interval=None):
+                 agent_uuid=None, developer_mode=False):
         self.volttron_home = volttron_home
 
         # These signals need to exist before calling super().__init__()
@@ -437,7 +431,6 @@ class Core(BasicCore):
         self.secretkey = secretkey
         self.serverkey = serverkey
         self.developer_mode = developer_mode
-        self.reconnect_interval = reconnect_interval
 
         self._set_keys()
 
@@ -451,13 +444,14 @@ class Core(BasicCore):
         self.__connected = False
 
     def _set_keys(self):
-        """Implements logic for setting encryption keys and putting
+        """
+        Implements logic for setting encryption keys and putting
         those keys in the parameters of the VIP address
         """
         if self.developer_mode:
             self.publickey = None
             self.secretkey = None
-            self.serverkey = None
+            self.serverkye = None
             return
 
         self._set_server_key()
@@ -527,7 +521,7 @@ class Core(BasicCore):
 
         keystore_path = os.path.join(keystore_dir, 'keystore.json')
         keystore = KeyStore(keystore_path)
-        return keystore.public, keystore.secret
+        return keystore.public(), keystore.secret()
 
     def _get_keys_from_addr(self):
         url = list(urlparse.urlsplit(self.address))
@@ -560,9 +554,6 @@ class Core(BasicCore):
     def loop(self, running_event):
         # pre-setup
         self.socket = vip.Socket(self.context)
-
-        if self.reconnect_interval:
-            self.socket.setsockopt(zmq.RECONNECT_IVL, self.reconnect_interval)
         if self.identity:
             self.socket.identity = self.identity
         yield

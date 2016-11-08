@@ -322,24 +322,18 @@ class RPC(SubsystemBase):
 
     @allow.classmethod
     def allow(cls, capabilities):
-        """
-        Decorator specifies required agent capabilities to call a method.
+        '''Decorator specifies required agent capabilities to call a method.
      
         This is designed to be used with the export decorator:
 
-        .. code-block:: python
-
-            @RPC.export
-            @RPC.allow('can_read_status')
-            def get_status():
-                ...
+        @RPC.export
+        @RPC.allow('can_read_status')
+        def get_status():
+            ...
 
         Multiple capabilies can be provided in a list:
-        .. code-block:: python
-
-            @RPC.allow(['can_read_status', 'can_call_my_methods'])
-
-        """
+        @RPC.allow(['can_read_status', 'can_call_my_methods'])
+        '''
         def decorate(method):
             if isinstance(capabilities, basestring):
                 annotate(method, set, 'rpc.allow_capabilities', capabilities)

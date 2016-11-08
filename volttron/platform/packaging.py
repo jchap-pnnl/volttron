@@ -103,9 +103,7 @@ class AgentPackageError(Exception):
 
 def extract_package(wheel_file, install_dir,
                     include_uuid=False, specific_uuid=None):
-
-    """
-    Extract a wheel file to the specified location.
+    '''Extract a wheel file to the specified location.
 
     If include_uuid is True then a uuid will be generated under the
     passed location directory.
@@ -113,29 +111,29 @@ def extract_package(wheel_file, install_dir,
     The agent final directory will be based upon the wheel's data
     directory name in the following formats:
 
-    .. code-block:: python
-
         if include_uuid == True
-            install_dir/uuid/datadir_name
+            install_dir/datadir_name/uuid
         else
             install_dir/datadir_name
 
-    :param wheel_file: The wheel file to extract.
-    :param install_dir: The root directory where to extract the wheel
-    :param include_uuid: Auto-generates a uuuid under install_dir to place the
-                         wheel file data
-    :param specific_uuid: A specific uuid to use for extracting the agent.
-    :return: The folder where the wheel was extracted.
+    Arguments
+        wheel_file     - The wheel file to extract.
+        install_dir    - The root directory where to extract the wheel
+        include_uuid   - Auto-generates a uuuid under install_dir to
+                         place the wheel file data
+        specific_uuid  - A specific uuid to use for extracting the agent.
 
-    """
+    Returns
+        The folder where the wheel was extracted.
+    '''
     real_dir = install_dir
 
     # Only include the uuid if the caller wants it.
     if include_uuid:
-        if specific_uuid == None:
-            real_dir = os.path.join(real_dir, str(uuid.uuid4()))
+        if uuid == None:
+            real_dir = os.path.join(real_dir, uuid.uuid4())
         else:
-            real_dir = os.path.join(real_dir, specific_uuid)
+            real_dir = os.path.join(real_dir, uuid)
 
     if not os.path.isdir(real_dir):
         os.makedirs(real_dir)
@@ -156,17 +154,6 @@ def repackage(directory, dest=None):
     written in the current working directory if dest is None or in the
     directory given by dest otherwise.
     '''
-    if dest is not None:
-        try:
-            if not os.path.isdir(dest):
-                os.makedirs(dest)
-        except Exception as e:
-            raise AgentPackageError("Unable to create destination directory "
-                                    "{}. Exception {}".format(
-                                    dest, e.message))
-    if not os.path.exists(directory):
-        raise AgentPackageError("Agent directory {} does not "
-                                "exist".format(directory))
     try:
         pkg = UnpackedPackage(directory)
     except ValueError as exc:
@@ -422,7 +409,7 @@ def main(argv=sys.argv):
                                        help = 'additional help',
                                        dest='subparser_name')
     package_parser = subparsers.add_parser('package',
-        help="Create agent package (whl) from a directory")
+        help="Create agent package (whl) from a directory or installed agent name.")
 
     package_parser.add_argument('agent_directory',
         help='Directory for packaging an agent for the first time (requires setup.py file).')

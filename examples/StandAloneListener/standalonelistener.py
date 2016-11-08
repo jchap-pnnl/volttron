@@ -110,7 +110,7 @@ if  __name__ == '__main__':
         
         print(remote_url())
         agent = StandAloneListener(address=remote_url(),
-                                   identity='standalone_listener')
+                                   identity='Standalone Listener') 
         task = gevent.spawn(agent.core.run)
         try:
             task.join()

@@ -1,4 +1,4 @@
-![image](docs/source/images/VOLLTRON_Logo_Black_Horizontal_with_Tagline.png)
+![image](docs/source/images/volttron-webimage.jpg)
 
 Distributed Control System Platform.
 
@@ -8,98 +8,90 @@ Distributed Control System Platform.
 |3.x| ![image](https://travis-ci.org/VOLTTRON/volttron.svg?branch=3.x)|
 |develop| ![image](https://travis-ci.org/VOLTTRON/volttron.svg?branch=develop)|
 
-VOLTTRONTM is an open source platform for distributed sensing and control. The platform provides services for collecting and storing data from buildings and devices and provides an environment for developing applications which interact with that data.
+## Dependencies
+A few external dependencies are required to bootstrap the development
+environment:
+  - Essential build tools (gcc, make, autodev-tools, etc.)
+  - Python development files (headers)
+  - Openssl.
 
-## Features
+On **Debian-based systems**,
+these can all be installed with the following command:
 
-* [Message Bus](http://volttron.readthedocs.io/en/master/core_services/messagebus/index.html#messagebus-index) allows agents to subcribe to data sources and publish results and messages
-* [Driver framework](http://volttron.readthedocs.io/en/master/core_services/drivers/index.html#volttron-driver-framework) for collecting data from and sending control actions to buildings and devices
-* [Historian framework](http://volttron.readthedocs.io/en/master/core_services/historians/index.html#historian-index) for storing data
-* [Agent lifecycle managment](http://volttron.readthedocs.io/en/master/core_services/control/AgentManagement.html#agentmanagement) in the platform
-* [Web UI](http://volttron.readthedocs.io/en/master/core_services/service_agents/central_management/VOLTTRON-Central.html#volttron-central) for managing deployed instances from a single central instance.
+```sh
+  $ sudo apt-get install build-essential python-dev openssl libssl-dev libevent-dev
+```
 
-## Background
+> **NOTE:** If you wish to use cryptographic authentication or
+  point-to-point encryption, libsodium must also be installed.
+  However, libsodium is not currently in the official Ubuntu or Debian
+  repositories, so it must be installed manually or from an unofficial
+  repository, such as https://launchpad.net/~shnatsel/+archive/dnscrypt.
+  The libsodium source code is found at https://github.com/jedisct1/libsodium.
 
-VOLTTRONTM is written in Python 2.7 and runs on Linux Operating Systems. For users unfamiliar with those technologies, the following resources are recommended:
+On **Arch Linux**, the following command will install the dependencies:
 
-https://docs.python.org/2.7/tutorial/
-http://ryanstutorials.net/linuxtutorial/
+```sh
+  $ sudo pacman -S base-devel python2 openssl libssl-dev libsodium
+```
 
 ## Installation
 
-Install VOLTTRON by running the following commands which installs needed [prerequisites](http://volttron.readthedocs.io/en/master/devguides/setup/VOLTTRON-Prerequisites.html#volttron-prerequisites), clones the source code, then builds the virtual environment for using the platform.
+To create a development environment,
+execute the following in the project root directory:
 
 ```sh
-sudo apt-get update
-sudo apt-get install build-essential python-dev openssl libssl-dev libevent-dev git
-git clone https://github.com/VOLTTRON/volttron
-cd volttron
-python bootstrap.py
+  $ python2.7 bootstrap.py
 ```
 
-This will build the platform and create a virtual Python environment. Activate this and then start the platform with:
+That's it! You can now start an interpreter that includes Volttron in the
+Python path using `env/bin/python` or run Volttron using `env/bin/volttron`.
+The bootstrap script will also create `env/bin/activate` which can be sourced
+to setup a developer environment with the appropriate paths set.
+It also creates a deactivate function to revert the settings.
 
 ```sh
-. env/bin/activate
-volttron -vv -l volttron.log&
+  $ . env/bin/activate
+  (volttron)$ echo $PATH
+  ... do development work
+  (volttron)$ deactivate
+  $ echo $PATH
 ```
 
-This enters the virtual Python environment and then starts the platform in debug (vv) mode with a log file named volttron.log.
-
-Next, start an example listener to see it publish and subscribe to the message bus:
+To update the scripts after modifying `setup.py` or after a repository update,
+use the following command:
 
 ```sh
-scripts/core/make-listener
+(volttron) user@machine $ python bootstrap.py
 ```
 
-This script handles several different commands for installing and starting an agent after removing an old copy. This simple agent publishes a heartbeat message and listens to everything on the message bus. Look at the VOLTTRON log to see the activity:
+The bootstrap script creates a virtual Python environment, using virtualenv,
+and installs Volttron as an editable (or developer mode) package using pip.
 
-```sh
-tail volttron.log
+## Testing
+
+VOLTTRON uses py.test as a framework for executing tests.  py.test is not installed
+with the distribution by default.  To install py.test and it's dependencies
+execute the following:
+
 ```
-Results in:
-
-```sh
-2016-10-17 18:17:52,245 (listeneragent-3.2 11367) listener.agent INFO: Peer: 'pubsub', Sender: 'listeneragent-3.2_1'
-:, Bus: u'', Topic: 'heartbeat/listeneragent-3.2_1', Headers:
-{'Date': '2016-10-18T01:17:52.239724+00:00', 'max_compatible_version': u'', 'min_compatible_version': '3.0'},
-Message: {'status': 'GOOD', 'last_updated': '2016-10-18T01:17:47.232972+00:00', 'context': 'hello'}
-```
-
-Stop the platform:
-
-```sh
-volttron-ctl shutdown --platform
+(volttron) user@machine $ python bootstrap.py --testing
 ```
 
-## Next Steps
-There are several [walkthroughs](http://volttron.readthedocs.io/en/master/devguides/index.html#devguides-index) to explore additional aspects of the platform:
+To run all of the tests in the volttron repository execute the following in the
+root directory:
 
-* [Agent Development Walkthrough](http://volttron.readthedocs.io/en/master/devguides/agent_development/Agent-Development.html#agent-development)
-* Demonstration of the [management UI](http://volttron.readthedocs.io/en/master/devguides/walkthroughs/VOLTTRON-Central-Demo.html#volttron-central-demo)
-
-## Acquiring Third Party Agent Code
-Third party agents are available under volttron-applications repository. In order to use those agents, add volttron-applications repository under the volttron/applications directory by using following command:
-
-```sh
-git subtree add –prefix applications https://github.com/VOLTTRON/volttron-applications.git develop –squash
+```
+(volttron) user@machine $ py.test
 ```
 
-## Contribute
+## Configuration
 
-How to [contribute](http://volttron.readthedocs.io/en/develop/contributing.html) back:
+To add project dependencies, add the dependent package to the
+`install_requires` list in `setup.py` and run `env/bin/python bootstrap.py`.
+Add agent or other external dependencies to `requirements.txt`.
 
-* Issue Tracker: http://github.com/VOLTTRON/volttron/issues
-* Source Code: http://github.com/VOLTTRON/volttron
+----
 
-## Support
-There are several options for VOLTTRONTM [support](http://volttron.readthedocs.io/en/master/community_resources/index.html#volttron-community).
-
-* A VOLTTRONTM office hours telecon takes place every other Friday at 11am Pacific over Skype.
-* A mailing list for announcements and reminders
-* The VOLTTRONTM contact email for being added to office hours, the mailing list, and for inquiries is: volttron@pnnl.gov
-* The preferred method for questions is through stackoverflow since this is easily discoverable by others who may have the same issue. http://stackoverflow.com/questions/tagged/volttron
-* GitHub issue tracker for feature requests, bug reports, and following development activities http://github.com/VOLTTRON/volttron/issues
-
-## License
-The project is [licensed](TERMS.md) under a modified BSD license.
+## Open source licensing info
+  - [TERMS](TERMS.md)

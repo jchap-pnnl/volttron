@@ -1,5 +1,3 @@
-.. _devguides_index:
-
 ===================
 Developer Resources
 ===================

@@ -1,4 +1,3 @@
-.. _Repository-Structure:
 Repository Structure
 =====================
 

@@ -8,7 +8,6 @@ from volttrontesting.utils.platformwrapper import PlatformWrapper
 
 PRINT_LOG_ON_SHUTDOWN = False
 
-
 def print_log(volttron_home):
     if PRINT_LOG_ON_SHUTDOWN:
         if os.environ.get('PRINT_LOGS', PRINT_LOG_ON_SHUTDOWN):
@@ -196,6 +195,7 @@ def get_volttron_instances(request):
     all_instances = []
 
     def get_n_volttron_instances(n, should_start=True):
+        print('GETTING NEW INSTANCES!!!!!', request.param, n)
         get_n_volttron_instances.count = n
         instances = []
         for i in range(0, n):

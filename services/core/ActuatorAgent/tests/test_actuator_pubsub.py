@@ -413,7 +413,7 @@ def test_schedule_announce(publish_agent, volttron_instance):
             msg).get(timeout=10)
         # expected result {'info': u'', 'data': {}, 'result': 'SUCCESS'}
         assert result['result'] == 'SUCCESS'
-        gevent.sleep(4)
+        gevent.sleep(5)
 
         # Test message on schedule/announce
         assert publish_agent.actuate0.called is True

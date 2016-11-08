@@ -1,5 +1,3 @@
-.. _ConfigurationStore:
-
 Agent Configuration Store
 =========================
 

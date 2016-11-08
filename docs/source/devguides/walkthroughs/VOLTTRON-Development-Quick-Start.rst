@@ -1,4 +1,3 @@
-.. _QuickStart:
 VOLTTRON Quick Start Guide
 ==========================
 
