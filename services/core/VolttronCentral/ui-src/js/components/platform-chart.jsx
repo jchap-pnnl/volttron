@@ -7,7 +7,9 @@ var moment = require('moment');
 var OutsideClick = require('react-click-outside');
 
 import ControlButton from './control-button';
-import {LineChart, AreaChart} from 'react-easy-chart';
+import {LineChart, AreaChart} from 'react-d3-components';
+// var LineChart = ReactD3.LineChart;
+// var AreaChart = ReactD3.AreaChart;
 
 var chartStore = require('../stores/platform-chart-store');
 var platformChartStore = require('../stores/platform-chart-store');
@@ -560,6 +562,15 @@ var GraphLineChart = OutsideClick(React.createClass({
       return {x: item[0], y: item[1]};
     });
 
+    // console.log(graphData[0]);
+
+    var chartData = [
+      {
+        label: this.props.data[0].name,
+        values: graphData
+      }
+    ];
+
     var tooltip;
 
     if (this.state.showTooltip)
@@ -582,36 +593,40 @@ var GraphLineChart = OutsideClick(React.createClass({
       );
     }
 
-    var easyChart;
+    var rdcChart, chartTooltip;
 
     switch(this.state.chartType)
     {
       case "stackedArea":
-        easyChart = (
+
+        chartTooltip = function(x, y, z) {
+            return "x: " + x + " y: " + z;
+        };
+        rdcChart = (
           <AreaChart 
-            axes
-            verticalGrid
-            dataPoints
-            mouseOverHandler={function (d, e) { this._showTooltip(d, e);}.bind(this) }
-            mouseOutHandler={function (e) { this._hideTooltip(e);}.bind(this) }
-            areaColors={['orange', 'green', 'cyan', 'pink']}
             height={200} 
             width={700} 
-            data={[graphData]}/>
+            data={chartData}
+            margin={{top: 10, bottom: 50, left: 50, right: 10}}
+            tooltipHtml={chartTooltip}
+            tooltipMode="element"
+            tooltipContained={true}/>
         );
         break;
       default:
-        easyChart = (
+
+        chartTooltip = function(x, pt) {
+            return "x: " + pt.x + " y: " + pt.y;
+        };
+        rdcChart = (
           <LineChart 
-            axes
-            verticalGrid
-            dataPoints
-            mouseOverHandler={function (d, e) { this._showTooltip(d, e);}.bind(this) }
-            mouseOutHandler={function (e) { this._hideTooltip(e);}.bind(this) }
-            lineColors={['orange', 'green', 'cyan', 'pink']}
             height={200} 
             width={700} 
-            data={[graphData]}/>
+            data={chartData}
+            margin={{top: 10, bottom: 50, left: 50, right: 10}}
+            tooltipHtml={chartTooltip}
+            tooltipMode="element"
+            tooltipContained={true}/>
         );
         break;
     }
@@ -621,7 +636,7 @@ var GraphLineChart = OutsideClick(React.createClass({
           style={chartStyle}
           ref={this.state.chartName}>
           {tooltip}
-          {easyChart}
+          {rdcChart}
           {controlButtons}
       </div>
     );
