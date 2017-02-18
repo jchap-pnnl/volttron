@@ -2,6 +2,7 @@
 
 var React = require('react');
 var PlatformChart = require('./platform-chart');
+var FauxDomChart = require('./faux-dom-chart');
 var modalActionCreators = require('../action-creators/modal-action-creators');
 var platformActionCreators = require('../action-creators/platform-action-creators');
 var NewChartForm = require('./new-chart-form');
@@ -58,7 +59,7 @@ var PlatformCharts = React.createClass({
             if (chartData[key].data.length > 0)
             {
                 var platformChart = (
-                    <PlatformChart key={key} 
+                    <FauxDomChart key={key} 
                         chart={chartData[key]} 
                         chartKey={key} 
                         hideControls={false}/>
