@@ -13,6 +13,8 @@ var HtmlWebpackPlugin = require('html-webpack-plugin');
 // enforce same case as file system
 var CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
 
+var CopyWebpackPlugin = require('copy-webpack-plugin');
+
 var argv = require('yargs').argv;
 var url = require('url');
 
@@ -118,7 +120,10 @@ module.exports = {
             BUILD_PATH + "/fonts"
         ]),
         
-        new ExtractTextPlugin("css/[name]-[hash].css")
+        new ExtractTextPlugin("css/[name]-[hash].css"),
+        new CopyWebpackPlugin([
+            { from: 'js/lib/jqwidgets' }
+        ])
 
     ],
     devServer: {
