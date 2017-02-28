@@ -210,6 +210,14 @@ var GraphLineChart = OutsideClick(React.createClass({
       //     delete this.chart;
       // }
   },
+  componentDidUpdate: function () {
+      // if (this.chart)
+      // {
+      //   // this.chart.update();
+      //   $(this.chart).jqxChart("update");
+      // }
+      
+  },
   _onStoresChange: function () {
       this.setState({pinned: platformChartStore.getPinned(this.props.name)});
       this.setState({chartType: platformChartStore.getType(this.props.name)});
@@ -628,7 +636,7 @@ var GraphLineChart = OutsideClick(React.createClass({
                             type: 'line',
                             valueAxis:
                             {
-                              displayValueAxis: false,
+                              displayValueAxis: true,
                               axisSize: 'auto'
                             },
                             // valueAxis: {
@@ -651,31 +659,36 @@ var GraphLineChart = OutsideClick(React.createClass({
         }
         var dataAdapter = new $.jqx.dataAdapter(source, {
           autoBind: true,
-          async: false
+          async: false,
+          id: this.props.name,
+          record: 'topic'
         });
         
         rdcChart=(
           <JqxChart
+            id="jqxchart"
             ref={(chart) => this.chart = chart}
             key={this.props.name}
             style={{ width:800, height:300 }}
             title={this.props.name} 
             description={""}
             showLegend={true} 
-            enableAnimations={false} 
+            enableAnimations={true}
+            enableAxisTextAnimation={true}
+            animationDuration={1000}
             padding={padding}
             titlePadding={titlePadding} 
-            source={dataAdapter} 
-            categoryAxis={{dataField: 'x', type: 'number'}}
+            source={graphData} 
+            xAxis={{dataField: 'x', type: 'number'}}
             colorScheme={'scheme01'} 
             seriesGroups={seriesGroups}
           />
         );
 
-        if (this.chart)
-        {
-          this.chart.refresh();
-        }
+        // if (this.chart)
+        // {
+        //   this.chart.update();
+        // }
         
         break;
     }

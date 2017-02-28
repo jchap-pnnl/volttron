@@ -80927,6 +80927,14 @@
 	        //     delete this.chart;
 	        // }
 	    },
+	    componentDidUpdate: function componentDidUpdate() {
+	        // if (this.chart)
+	        // {
+	        //   // this.chart.update();
+	        //   $(this.chart).jqxChart("update");
+	        // }
+	
+	    },
 	    _onStoresChange: function _onStoresChange() {
 	        this.setState({ pinned: platformChartStore.getPinned(this.props.name) });
 	        this.setState({ chartType: platformChartStore.getType(this.props.name) });
@@ -81349,7 +81357,7 @@
 	                var seriesGroups = [{
 	                    type: 'line',
 	                    valueAxis: {
-	                        displayValueAxis: false,
+	                        displayValueAxis: true,
 	                        axisSize: 'auto'
 	                    },
 	                    // valueAxis: {
@@ -81369,10 +81377,13 @@
 	                };
 	                var dataAdapter = new $.jqx.dataAdapter(source, {
 	                    autoBind: true,
-	                    async: false
+	                    async: false,
+	                    id: this.props.name,
+	                    record: 'topic'
 	                });
 	
 	                rdcChart = React.createElement(_react_jqxchart2.default, {
+	                    id: 'jqxchart',
 	                    ref: function ref(chart) {
 	                        return _this.chart = chart;
 	                    },
@@ -81381,18 +81392,21 @@
 	                    title: this.props.name,
 	                    description: "",
 	                    showLegend: true,
-	                    enableAnimations: false,
+	                    enableAnimations: true,
+	                    enableAxisTextAnimation: true,
+	                    animationDuration: 1000,
 	                    padding: padding,
 	                    titlePadding: titlePadding,
-	                    source: dataAdapter,
-	                    categoryAxis: { dataField: 'x', type: 'number' },
+	                    source: graphData,
+	                    xAxis: { dataField: 'x', type: 'number' },
 	                    colorScheme: 'scheme01',
 	                    seriesGroups: seriesGroups
 	                });
 	
-	                if (this.chart) {
-	                    this.chart.refresh();
-	                }
+	                // if (this.chart)
+	                // {
+	                //   this.chart.update();
+	                // }
 	
 	                break;
 	        }
@@ -107791,4 +107805,4 @@
 
 /***/ }
 /******/ ]);
-//# sourceMappingURL=app-5c45efc3ccada3f09a2e.js.map
+//# sourceMappingURL=app-47054f8e433d74f996a7.js.map
